@@ -1,57 +1,36 @@
-import ast
 import simpy
 import pandas as pd
-import sys 
+import sys
 sys.path.insert(1, 'H:/My Drive/Thesis/Simulation/customSim')
 
 from PPR.PPRClasses import *
-from PPR.Functions import *
+from Functions import *
 import utils
+
+# Process Map Explanation
+'''
+- `process_map` is a nested list representing processes modeled on the main branch as objects and sub-processes modeled as dictionaries with keys as part of the spine.
+- Resources such as buffers can be added to the process flow model, to which upstream and downstream processes are generated during runtime.
+- Processes serve as a pivot connecting resources and products, hence being simulated.
+'''
 
 env = simpy.Environment()
 
+# Generating Domains
+domains = get_classes(PPRClasses) # Domains defined as classes in PPRClasses
 
-domains = get_classes(PPRClasses) # generating the domains which are defined as classes in PPRClasses
-# print(f'The domains are: {domains}')
-
+# Directory Path for Definitions
 directory_path = '../customSim/LES/systemDefinition'
 
-# importing data from excel formatted as {'object_id' : [[],[]]}
-process_flow_model = make_process_flow_model(env, domains, directory_path)
+# Model Domain Objects
+for domain in domains:
+    domain.object_list = model_domain(env, domain, directory_path) # Defines objects based on attributes defined in the Excel sheet
 
-print(process_flow_model)
+# Consolidating Object List
+object_list = Product.object_list + Process.object_list + Resource.object_list
 
-object_list = Product.object_list + Process.object_list + Resource.object_list 
+# Generating Process Flow Model
+process_flow_model = make_process_flow_model(domains) # Generates process flow model as a string
 
-
-'''
-- process_map is a nested list with processes modelled on main branch as object and sub-processes modelled as a dictionary with key as part of spine .
-- Resources such as buffers can be added to peocess flow model, to which the upstream and downstream processes are generated during runtime.
-- Process serves as a pivot connecting resources and products and hence processes are being simulated.
-'''
-'''
-# process flow model generated from excel as it is the front end
-
-processes = map_processes(process_flow_model, object_list) # generates the upstream and downstream processes based on process flow model
-
-
-
-
-def simulate_factory(env, processes, orders):
-    for order in orders:
-        initiate_order(env, order)
-        
-    for process in processes:
-        execute_process(process)
-    
-def execute_process(env, process):
-    print(f'executing {process.id}')
-
-def initiate_order(env, order):
-    pass
-
-
-
-env.process(simulate_factory(processes)) # 'Process' 'object' list is generated from the excel sheets
-env.run(until = 10)
-'''
+# Mapping Processes
+map_processes(process_flow_model, domains) # Generates upstream and downstream processes based on process flow model

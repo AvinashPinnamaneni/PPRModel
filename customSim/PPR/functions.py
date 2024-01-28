@@ -12,8 +12,9 @@ from PPR import PPRClasses
 from PPR.PPRClasses import *
 from PPR.Functions import *
 
+
+# Function to add attributes to an object during runtime
 def add_attribute(self, attribute):
-    """Add attributes to an object during runtime."""
     if not isinstance(attribute, dict):
         raise ValueError("Attribute should be a dictionary")
 
@@ -22,8 +23,8 @@ def add_attribute(self, attribute):
         self.attributes[key] = value 
 
 
+# Function to get classes available in a module
 def get_classes(library_module):
-    """Return a list of classes available in the module."""
     classes = []
     for name, obj in inspect.getmembers(library_module):
         if inspect.isclass(obj):
@@ -31,19 +32,18 @@ def get_classes(library_module):
     return classes
 
 
+# Function to get attributes of a class type
 def get_attributes(class_type):
-    """Get attributes of a class type."""
-    attributes = class_type().attributes
-    return attributes
+    return class_type().attributes
 
 
+# Function to evaluate the cost based on the list of components
 def evaluate_cost(object):
-    """Evaluate the cost based on the list of components being used in case of assemblies and products."""
     pass
 
 
+# Function to model a domain and create instances of the object
 def model_domain(env, domain, directory_path):
-    """Model a domain and create instances of the object."""
     object_list = []
     file_path = f'{directory_path}/{domain.__name__}.xlsx'
     attribute_list = domain(env).attributes
@@ -88,60 +88,62 @@ def model_domain(env, domain, directory_path):
     return object_list
 
 
-def map_processes(process_flow_model, object_list):
-    """Generate upstream and downstream processes for each process."""
+# Function to generate upstream and downstream processes for each process
+def map_processes(process_flow_model, domains):
+    object_list = []
+    for domain in domains:
+        object_list = object_list + domain.object_list
+
     processes = []
 
     for process_id, network in process_flow_model.items():
         input_processes = network[0]
         output_processes = network[1]
-        
-        print(get_name_list(get_process_object(process_id, object_list).upstream_processes))
+
         upstream_processes = define_upstream(process_id, input_processes, object_list)
-        print(get_name_list(get_process_object(process_id, object_list).upstream_processes))
         downstream_processes = define_downstream(process_id, output_processes, object_list)
 
         current_process = get_process_object(process_id, object_list)
         
-        # Check if the current process is not already in the list before appending
         if current_process not in processes:
             processes.append(current_process)
 
-    # Add upstream and downstream processes to the list
     processes = processes + upstream_processes + downstream_processes
 
     for process in processes:
         if process is not None:
-            # Get lists of names for upstream and downstream processes
             upstream_processes = get_name_list(process.upstream_processes)
             downstream_processes = get_name_list(process.downstream_processes)
-            # print(f'{process.name}: {upstream_processes}, {downstream_processes}')
-
         else:
             print("No production objects defined.")
+    
+    for domain in domains:
+        if domain.__name__ in ['Process', 'Resource']:
+            for object in domain.object_list:
+                object.upstream_processes = [process for process in object.upstream_processes if not isinstance(process, str)]
+                object.downstream_processes = [process for process in object.downstream_processes if not isinstance(process, str)]
+
 
 # Function to get a list of names from a list of objects or strings
 def get_name_list(list_of_objects):
-    """Return a list of names from a list of objects or strings."""
     name_list = []
     for obj in list_of_objects:
         if hasattr(obj, 'name'):
             name_list.append(obj.name)
         else:
-            name_list.append(str(obj))  # Convert non-object elements to string
+            name_list.append(str(obj))
     return name_list
 
 
+# Function to return the process object matching the given id
 def get_process_object(process_id, object_list):
-    """Return the process object matching the given id."""
     return next((obj for obj in object_list if obj.id == process_id), None)
 
 
+# Function to define upstream processes
 def define_upstream(process_id, input_processes, object_list):
-
     process_list = []
     current_process = get_process_object(process_id, object_list)
-    
     if current_process is not None:
 
         for input_process_id in input_processes:
@@ -163,6 +165,7 @@ def define_upstream(process_id, input_processes, object_list):
     return process_list
 
 
+# Function to define downstream processes
 def define_downstream(process_id, output_processes, object_list):
 
     process_list = []
@@ -186,11 +189,11 @@ def define_downstream(process_id, output_processes, object_list):
     
     return process_list
 
-def make_process_flow_model(env, domains, directory_path):
+
+# Function to create a process flow model
+def make_process_flow_model(domains):
     process_flow_model = {} 
-    # generating process flow model from
     for domain in domains:
-        domain.object_list = model_domain(env, domain, directory_path) # defines objects based on the attributes defined in the excel sheet
         if domain.__name__ in ['Process', 'Resource']:
             for object in domain.object_list:
                 upstream_process_list = []
@@ -202,6 +205,6 @@ def make_process_flow_model(env, domains, directory_path):
                     downstream_process_list.append(process)
 
 
-                process_map = {str(object.name) : [upstream_process_list, downstream_process_list]}
+                process_map = {str(object.id) : [upstream_process_list, downstream_process_list]}
                 process_flow_model.update(process_map)
     return process_flow_model
