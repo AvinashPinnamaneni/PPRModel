@@ -1,9 +1,9 @@
 import simpy
 import pandas as pd
 import sys
-sys.path.insert(1, 'H:/My Drive/Thesis/Simulation/customSim')
+sys.path.insert(1, 'H:/My Drive/Thesis/Simulation')
 
-from PPR.PPRClasses import *
+from PPRClasses import *
 from Functions import *
 import utils
 
@@ -20,7 +20,7 @@ env = simpy.Environment()
 domains = get_classes(PPRClasses) # Domains defined as classes in PPRClasses
 
 # Directory Path for Definitions
-directory_path = '../customSim/LES/systemDefinition'
+directory_path = '../Simulation/LES/systemDefinition'
 
 # Model Domain Objects
 for domain in domains:

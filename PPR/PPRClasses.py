@@ -1,8 +1,9 @@
 import simpy
+import pandas as pd
 import sys
 
 # Add the path of customSim directory to the system path
-sys.path.insert(1, 'H:/My Drive/Thesis/Simulation/customSim')
+sys.path.insert(1, 'H:/My Drive/Thesis/Simulation')
 
 # Import necessary functions from custom package
 from PPR.Functions import *

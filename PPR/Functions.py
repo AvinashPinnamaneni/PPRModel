@@ -6,7 +6,7 @@ import os
 import sys
 
 # Importing the path of the current working directory
-sys.path.insert(1, 'H:/My Drive/Thesis/Simulation/customSim')
+sys.path.insert(1, 'H:/My Drive/Thesis/Simulation')
 
 from PPR import PPRClasses
 from PPR.PPRClasses import *
