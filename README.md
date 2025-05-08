@@ -5,6 +5,6 @@
 - These KPI solutions are then used to find Pareto Optimal solutions which are used to choose the best variant of production system thorugh minimized set of variants.
 ## File structure:
 - The main files for the program are organized as
--   main : Main program which runs in a loop for simulation.
--   Functions : includes all the functions defined for creating resource configurations, process configurations and process variants. 
--   PPR Classes : Contains the PPR classes which store the meta data for the production objects used for simulation. Additionally contains Order class through which demand for the production system is specified which defining a production system instance.
+  - main : Main program which runs in a loop for simulation.
+  - Functions : includes all the functions defined for creating resource configurations, process configurations and process variants. 
+  - Classes : Contains the PPR classes which store the meta data for the production objects used for simulation. Additionally contains Order class through which demand for the production system is specified which defining a production system instance.
